@@ -2,14 +2,47 @@
 
 ## Correlations
 
+#dat
 dat <- read.table("https://www.uvm.edu/~dhowell/fundamentals8/DataFiles/Tab11-7.dat",
                   sep="\t", header=T)
 head(dat)
-str(dat)
-cor(dat)
+str(dat) # structure
+# integer : 정수
+# numeric : 수치형
+# chracter : 문자형
+dat$Efficacy = as.character(dat$Efficacy)
+dat$Efficacy = as.numeric(dat$Efficacy)
+
+library(dplyr)
+
+cor(dat %>% select(-FAMID))
+cor(dat %>% select(Esteem:Efficacy))
 cov(dat) #var(dat)
-psych::corr.test(dat)
+
+cor(dat$Esteem, dat$MatCare) # -1 ~ 1
+cov(dat$Esteem, dat$MatCare)
+sd(dat$Esteem)
+sd(dat$MatCare)
+cov(dat$Esteem, dat$MatCare)/(sd(dat$Esteem)*sd(dat$MatCare))
+
+x = rnorm(100)
+y = rnorm(100)
+plot(y ~ x)
+
+x = rnorm(100)
+y = x+ rnorm(100)
+plot(y ~ x)
+
+x = rnorm(100)
+y = 2*x+ rnorm(100)
+plot(y ~ x)
+
+psych::corr.test(dat %>% select(-FAMID) %>% slice(1:20))
 psych::cor.ci(dat)
+psych::cor.ci(dat %>% select(Esteem, MatCare))
+
+library(psych)
+corr.test(dat$Esteem, dat$MatCare)
 
 library(corrgram)
 # if the output message is something like,
@@ -17,9 +50,16 @@ library(corrgram)
 #   install.packages('corrgram')
 corrgram(dat, order=T, lower.panel=panel.shade,
          upper.panel=panel.pie, text.panel=panel.txt)
-car::scatterplotMatrix(dat)
-pairs(dat) #plot(dat)
-lattice::splom(dat)
+car::scatterplotMatrix(dat %>% select(-FAMID))
+
+mean(dat$MatCare)
+dat <- 
+  dat %>% mutate(
+  MatCare = ifelse(MatCare > 3.318,
+                   'High', 'Low'))
+
+pairs(dat %>% select(-FAMID)) #plot(dat)
+lattice::splom(dat %>% select(-FAMID))
 
 library(ggplot2)
 library(GGally)
