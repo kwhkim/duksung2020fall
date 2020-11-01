@@ -1,0 +1,42 @@
+---
+title: "Repeated Meaures"
+output: html_document
+---
+
+## Repeated Measures ANOVA
+
+* 독립성 가정
+  - 오차항의 독립성?
+  - $u_i + e_{ij}$  # i-번째 sample, j-번째 관측
+  - 오차 상관을 고려하지 않으면, 추론에 문제가 있다!
+
+* 비선형 또는 상호 작용
+  - 비선형성 : 일변수에서 변수의 수준에 따라 효과가 다르게 나타난다.
+  - 상호 작용 : 이변수에서 다른 변수의 수준에 따라 효과가 다르게 나타난다.
+
+* 기본적인 가정
+  - 정규성
+  - 등분산성
+  - 구형성(Sphericity)
+
+![구형성 가정](https://blogfiles.pstatic.net/20150602_4/y4769_1433173222474YrBtE_PNG/%BD%BD%B6%F3%C0%CC%B5%E516.PNG)
+
+## Mixed effects model
+
+A.k.a(*A*lso *k*nown *a*s) variance component model, or hierarchical linear model.
+
+* Three well known problems of ANOVA
+  - sphericity
+  - hierarchical sampling
+  - missing data
+  
+observations are not independent, because observations are clustered within subjects, ...
+
+* **chance capitalization** : drawing a conclusion from data wholly or partly biased in a particular direction by chance. A common example of capitalization on chance is the presentation of all the significant results in a study without considering the number of results examined.
+
+* imcomplete design, such as Latin-squares.
+
+Mixed effects model is robust to violations of homoschedasticity and sphericity, and missing data.
+
+
+
