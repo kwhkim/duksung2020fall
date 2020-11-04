@@ -59,9 +59,21 @@ $$\mathbb{E} [\sum{y_{ij}}/3n] = (3n \cdot \mu) / 3n = \mu$$
 $$\mathbb{V} [\sum{y_{ij}}/3n] = [\mathbb{V}[y_{11}]+\mathbb{V}[y_{12}] +  2\mathbb{C}[y_{11}, y_{12}] + \cdots] 
 ]/{(3n)^2}$$
 
-여기서 $\mathbb{C}[y_{11}, y_{12}] = 0$ 이지만, $\mathbb{C}[y_{11}, y_{21}] = \mathbb{V}[u]$ 이다(아래 전개 참조).
+여기서 $\mathbb{C}[y_{1j}, y_{2k}] = 0$ 이지만, $\mathbb{C}[y_{1j}, y_{1k}] = \mathbb{V}[u]$ 이다(아래 전개 참조).
 
-$$\mathbb{C}[y_{11}, y_{21}] = \mathbb{C}[u_1 + e_{11} , u_2 + e_{21}] = \mathbb{C}[u_1, u_2] + \mathbb{C}[u_1, e_{21}] + \mathbb{C}[u_2, e_{12}] + \mathbb{C}[e_{12}, e_{21}] = \mathbb{V}[u]$$
+$$\mathbb{C}[y_{11}, y_{12}] = \mathbb{C}[u_1 + e_{11} , u_1 + e_{12}] = \mathbb{C}[u_1, u_1] + \mathbb{C}[u_1, e_{12}] + \mathbb{C}[u_1, e_{11}] + \mathbb{C}[e_{11}, e_{12}] = \mathbb{V}[u_1] = \mathbb{V}[u]$$
+
+따라서 $\mathbb{V} [\sum{y_{ij}}/3n]$ 은 다음과 같이 구한다.
+
+$$\mathbb{V} [\sum{y_{ij}}/3n] = \left[\sum_{i}\sum_{j}\mathbb{V}[y_{ij}]+\sum_{i}\sum_{j}\sum_{k}\mathbb{C}[y_{ij}, y_{ik}] \right]/{(3n)^2}$$
+
+$$\mathbb{V} [\sum{y_{ij}}/3n] =\left[ 3n \cdot\mathbb{V}[y_{ij}]+2\cdot3n\cdot\mathbb{V}[u]  \right]/{(3n)^2}$$
+$$\mathbb{V} [\sum{y_{ij}}/3n] =\left[\mathbb{V}[y_{ij}]+2\mathbb{V}[u_i]  \right]/(3n)$$
+
+$$\mathbb{V} [\sum{y_{ij}}/3n] =\left[\mathbb{V}[u]+\mathbb{V}[e]+2\mathbb{V}[u] \right]/(3n)$$
+
+결론적으로 전체 표본 평균의 분산은 반복 측정의 경우에 독립 표본의 경우보다 커짐을 확인할 수 있고, 이에 따라 반복 측정 결과를 독립 표본일 때와 같이 영가설 검정을 실시한다면 1종 오류율이 증가할 것임을 예상할 수 있다.
+
 
 
 
