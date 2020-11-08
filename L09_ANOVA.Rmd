@@ -1,0 +1,72 @@
+---
+title: "분산분석"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 효과크기
+  - 효과크기 신뢰구간
+
+# 검정력
+  - 검정력 계산
+
+
+
+# 분산 분석
+
+## 일요인 분산 분석
+
+* 다중 비교(Multiple Comparison)의 문제점 
+  * 다중성(multiplicity) 문제
+  
+> 독립적인 여러 검정을 사용하면 계통적   
+  
+* 여러 모평균에 대한 영가설 검정 방법
+  * F-분포
+  * 자유도 
+    * 각 집단의 자유도
+* R로 하는 일요인 분산분석
+  * 가정
+  * 시각화
+  * 결과 해석
+* 사후비교(Post-hoc comparison) 또는 다중 비교
+  * 오류율
+    * 약한 계통적 오류(weak familywise error) : 부분 영가설이 모두 참일 때, 그 중 하나라도 기각하는 확률. 분산분석에서 통제하는 것은 **약한 계통적 오류율**이다.
+    * 강한 계통적 오류율(strong familywise error rate) : 전체 영가설을 구성하는 모든 부분 영가설의 집합에 대한 오류. 전체 영가설이 거짓일 떄, 전체 영가설을 구성하는 일부 부분 영가설 중 거짓이 영가설들로 새로운 전체 영가설을 구성했을 때 새로운 전체 영가설을 기각하는 확률
+      
+  * 사후 비교 방법
+    * 피셔의 통제된 최소유의차이법(Protected Least Significant Difference; Protected LSD) : ANOVA에서 유의미하다면 동일한 유의수준으로 pairwise t-검정. ANOVA에서 유의미하지 않다면 t-검정을 실시하지 않는다. 약한 계통적 오류율은 통제되지만, **강한 계통적 오류율**은 통제하지 못한다.
+    * 본페르니(Bonferroni) 방법 : 실제 오류율의 최대값이 유의 수준이 된다. 실제 오류율은 유의 수준보다 작으므로 **보수적**인 방법
+    * 시닥(Sidak)의 방법 : 검정이 모두 독립일 때, 실제 오류율과 유의 수준이 같다.
+    * 홈(Holm)의 방법: 
+    * 튜키(Tukey)의 방법 : 
+      * 스튜던트화 범위 분포 
+  * 오류율 사이의 관계
+    * 약한 계통적 오류율 <= 거짓 발견율의 기댓값 <= 강한 계통적 오류율
+    
+    
+* 분산분석 F-검정과 다중비교 t-검정 비교
+* 단측 검정과 양측 검정 비교
+
+
+## 이요인 분산 분석
+
+* 이요인 분산 분석의 영가설
+  * 이요인 분산 분석의 모형
+* 주효과, 상호작용 효과
+* R로 하는 이요인 분산 분석
+  * 가정
+  * 시각화
+  * 결과 해석
+
+----
+
+## Reference
+* [Effect size and power](http://daniellakens.blogspot.com/2020/03/effect-sizes-and-power-for-interactions.html)
+* [What's family in familywise error?](http://daniellakens.blogspot.com/2020/03/whats-family-in-family-wise-error.html)
+
+
+
