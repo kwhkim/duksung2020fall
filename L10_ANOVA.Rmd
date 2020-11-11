@@ -8,7 +8,23 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## 효과 크기
-  - 효과크기 신뢰구간
+  - [효과크기 신뢰구간](https://www.uvm.edu/~statdhtx/methods8/Supplements/Confidence%20Intervals%20on%20Effect%20Size.pdf)
+  
+```{r}
+#install.packages('effsize')
+#install.packages('effectsize')
+
+y1 = rnorm(10, 165, 10)
+y2 = rnorm(10, 175, 10)
+dat = data.frame(height = c(y1, y2), 
+                 gender = c(rep('F', 10), rep('M', 10)))
+
+library(effsize)
+
+cohen.d(dat$height, dat$gender, pooled=FALSE)
+cohen.d(dat$height, dat$gender, pooled=TRUE)
+```
+
 
 ## 검정력에 영향을 미치는 요인들
 
@@ -20,7 +36,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 영가설(통제 집단)의 모평균과 실제 모평균의 차이에 모(통제집단)표준편차를 나누면 **효과크기**가 된다.
 
+```{r}
+library(pwr) # install.packages('pwr')
+pwr.t.test(n=25, d=0.75, sig.level=.05, alternative="two.sided")
+pwr.t.test(d=0.75, sig.level=.05, alternative="two.sided", power = 0.8)
+# alternative = c('two.sided', 'less', 'greater')
+# type = c('two.sample', 'one.sample', 'paired')
+```
+
+
 * [검증력 계산 소프트웨어: GPower](https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower.html)
+
+* [Power Analysis](https://www.statmethods.net/stats/power.html)
 
 ----
 
@@ -36,41 +63,62 @@ library(ggplot2)
 
 dat <- read.table('https://www.uvm.edu/~statdhtx/methods8/DataFiles/Tab13-2.dat', 
            header=TRUE)
-dat = dat %>% mutate(Age = ifelse(Age == 1, "Young", "Old"))
+dat = dat %>% mutate(Age = ifelse(Age == 1, "Young", "Old"),
+                     Condition = factor(Condition))
 
+table(dat$Condition)
+
+library(ggbeeswarm)
 dat %>%
-  ggplot(aes(Condition, Recall, group=Age, color=Age)) +
-  stat_summary(geom="pointrange", fun.data = mean_cl_boot) +
+  ggplot(aes(Condition, Recall)) +
+  geom_beeswarm(col='grey60', alpha=0.7) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
   ylab("Recall (95% CI)") +
   xlab("")
 
-with(dat, pairwise.t.test(Recall, Condition, p.adj = "none"))
-with(dat, pairwise.t.test(Recall, Condition, p.adj = "bonferroni"))
-# p.adj = c('holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none')
-with(dat, pairwise.t.test(Recall, Condition, p.adj = "holm"))
+library(ggbeeswarm)
+dat %>%
+  ggplot(aes(Condition, Recall)) +
+  geom_jitter(col='grey60', alpha=0.7, width=0.1) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
+  ylab("Recall (95% CI)") +
+  xlab("")
 ```
-
-
-```{r}
-library(multcomp)
-fit.gh <- glht(fit, linfct = mcp(group = c(1, -1/2, -1/2)))
-summary(fit.gh)
-```
-
 
 * 다중 비교(Multiple Comparison)의 문제점 
   * 다중성(multiplicity) 문제
   
-> 독립적인 여러 검정을 사용하면 계통적   
+```{r}
+t.test(dat %>% filter(Condition == 1) %>% pull(Recall),
+       dat %>% filter(Condition == 2) %>% pull(Recall)) # var.equal = FALSE
+t.test(dat %>% filter(Condition == 1) %>% pull(Recall),
+       dat %>% filter(Condition == 3) %>% pull(Recall))
+t.test(dat %>% filter(Condition == 1) %>% pull(Recall),
+       dat %>% filter(Condition == 4) %>% pull(Recall))
+# ...
+t.test(dat %>% filter(Condition == 4) %>% pull(Recall),
+       dat %>% filter(Condition == 5) %>% pull(Recall))
+
+with(dat, pairwise.t.test(Recall, Condition, p.adj = "none", pool.sd = FALSE))
+```  
   
 * 여러 모평균에 대한 영가설 검정 방법
   * F-분포
   * 자유도 
     * 각 집단의 자유도
+    
+    
 * R로 하는 일요인 분산분석
   * 가정
   * 시각화
   * 결과 해석
+  
+```{r}
+fit <- aov(Recall ~ Condition, dat)
+summary(fit)
+plot(fit)
+```
+
 * 사후비교(Post-hoc comparison) 또는 다중 비교
   * 오류율
     * 약한 계통적 오류(weak familywise error) : 부분 영가설이 모두 참일 때, 그 중 하나라도 기각하는 확률. 분산분석에서 통제하는 것은 **약한 계통적 오류율**이다.
@@ -85,47 +133,142 @@ summary(fit.gh)
       * 스튜던트화 범위 분포 
   * 오류율 사이의 관계
     * 약한 계통적 오류율 <= 거짓 발견율의 기댓값 <= 강한 계통적 오류율
+    * 거짓 발견율(FDR; **F**alse **D**iscovery **R**ate)
     
 ```{r}
-dat = data.frame(y= c(1,3,2,4,3,5), group=factor(c(1,1,2,2,3,3)))
+with(dat, pairwise.t.test(Recall, Condition, p.adj = "bonferroni", pool.sd = FALSE))
+with(dat, pairwise.t.test(Recall, Condition, p.adj = "holm", pool.sd = FALSE))
+with(dat, pairwise.t.test(Recall, Condition, p.adj = "fdr", pool.sd = FALSE))
 
-fit <- aov(y ~ group, data = dat)
-TukeyHSD(fit)
-```
-    
-```{r}
-library(agricolae) 
-duncan.test(fit, "group", alpha = 0.05, console = TRUE)
-```
-    
-```{r}
-library(laercio) # install.packages('laercio')
-LDuncan(fit, "group")
+pmat_bonf <- with(dat, pairwise.t.test(Recall, Condition, p.adj = "bonferroni", pool.sd = FALSE))
+pmat_holm <- with(dat, pairwise.t.test(Recall, Condition, p.adj = "holm", pool.sd = FALSE))
+pmat_fdr <- with(dat, pairwise.t.test(Recall, Condition, p.adj = "fdr", pool.sd = FALSE))
+
+pmat_bonf$p.value - pmat_holm$p.value
+pmat_holm$p.value - pmat_fdr$p.value
 ```
 
+    
+```{r}
+(tukey <- TukeyHSD(fit))
+plot(tukey)
+```
+    
+```{r}
+fit.tukey <- glht(fit, linfct = mcp(Condition = 'Tukey'))
+summary(fit.tukey)
+confint(fit.tukey)
+plot(confint(fit.tukey))
+```
+    
+    
+### 대비
+
+* 예
+
+$$\mu_1 + \mu_2 + \mu_3 = \mu_4 + \mu_5$$
+
+$$\frac{\mu_1 + \mu_2 + \mu_3}{3} = \frac{\mu_4 + \mu_5}{2}$$
+
+```{r}
+confint(glht(fit, 
+             linfct = mcp(Condition = c("`1` + `2` + `3` - `4` - `5` = 0",
+                                        "`1` + `3` - `5` = 0"))))
+          
+contr <- rbind("2 by 3" = c(-1/2, -1/2, 1/3, 1/3, 1/3),
+               "odd by even" = c(-1/3, 1/2, -1/3, 1/2, -1/3))                                 
+               
+confint(glht(fit, linfct = mcp(Condition = contr))) 
+
+```
+    
     
 * 분산분석 F-검정과 다중비교 t-검정 비교
 * 단측 검정과 양측 검정 비교
 
-### REFERENCE
-
-* https://stat.ethz.ch/~meier/teaching/anova/contrasts-and-multiple-testing.html
-
-
 ## 이요인 분산 분석
+
+### 데이터 시각화
+
+```{r}
+dat %>%
+  ggplot(aes(Condition, Recall, col=Age, group=Age)) +
+  geom_jitter(alpha=0.6, width=0.1) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
+  ylab("Recall") +
+  xlab("Condition")
+
+library(gghighlight)
+dat$null = ""
+dat %>%
+  ggplot(aes(Condition, Recall, col=Age, group=Age)) +
+  geom_beeswarm(alpha=0.6, width=0.1) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
+  facet_grid(Age ~ .) + 
+  gghighlight(label_key=null) + 
+  ylab("Recall") +
+  xlab("Condition")
+
+dat %>%
+  ggplot(aes(Condition, Recall, col=Age, group=Age)) +
+  #geom_beeswarm(alpha=0.6, width=0.1) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
+  facet_grid(Age ~ .) + 
+  gghighlight(label_key=null) + 
+  ylab("Recall") +
+  xlab("Condition")
+
+dat %>%
+  ggplot(aes(Condition, Recall, col=Age, group=Age)) +
+  #geom_beeswarm(alpha=0.6, width=0.1) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal,
+               position = position_dodge(width=0.1)) + 
+  #facet_grid(Age ~ .) + 
+  #gghighlight(label_key=null) + 
+  ylab("Recall") +
+  xlab("Condition")
+
+dat %>%
+  ggplot(aes(Age, Recall, col=Age, group=Age)) +
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal,
+               position = position_dodge(width=0.1),
+               color = 'black') + 
+  geom_beeswarm(alpha=0.5, width=0.1) + 
+  facet_grid(. ~ Condition) + 
+  #gghighlight(label_key=null) + 
+  ylab("Recall") +
+  xlab("Condition")
+```
+
 
 * 이요인 분산 분석의 영가설
   * 이요인 분산 분석의 모형
-* 주효과, 상호작용 효과
-* R로 하는 이요인 분산 분석
-  * 가정
-  * 시각화
-  * 결과 해석
+  
+$$\mu_{ijk} = \alpha_{i} + \beta_{j} + e_{ijk}\ \ \ \ \  \textrm{주효과 모형}$$  
+  
+$$\mu_{ijk} = \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} + e_{ijk}\ \ \ \ \  \textrm{상호작용 모형}$$
+
+  * 주효과, 상호작용 효과에 대한 영가설
+
+$$ \textrm{H}_0\ : \ \alpha_i = 0 $$
+
+$$ \textrm{H}_0\ : \ \beta_j = 0 $$
+
+$$ \textrm{H}_0\ : \ (\alpha\beta)_{ij} = 0 $$
+
+```{r}
+fit_main <- aov(Recall ~ Condition + Age, data = dat)
+summary(fit_main)
+
+#fit_interaction <- aov(Recall ~ Condition * Age, data = dat)
+fit_interaction <- aov(Recall ~ Condition + Age + Condition:Age, data = dat)
+summary(fit_interaction)
+```
 
 ----
 
-## Reference
+### 참고 자료
 * [Effect size and power](http://daniellakens.blogspot.com/2020/03/effect-sizes-and-power-for-interactions.html)
 * [What's family in familywise error?](http://daniellakens.blogspot.com/2020/03/whats-family-in-family-wise-error.html)
-
-
+* https://stat.ethz.ch/~meier/teaching/anova/contrasts-and-multiple-testing.html
+* [OSF](https://osf.io/rmn8p/download)
