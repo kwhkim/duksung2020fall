@@ -107,16 +107,11 @@ with(dat, pairwise.t.test(Recall, Condition, p.adj = "none", pool.sd = FALSE))
 ```  
   
 * 여러 모평균에 대한 영가설 검정 방법
-  * F-분포
-  * 자유도 
-    * 각 집단의 자유도
+  * [F-분포](https://en.wikipedia.org/wiki/F-distribution)
+  * F-검정의 두 자유도 $d_1$ , $d_2$
+    * $d_1$ : 집단 평균 분산 추정에서 자유도
+    * $d_2$ : 집단 내 공통 분산 추정에서 자유도
     
-    
-* R로 하는 일요인 분산분석
-  * 가정
-  * 시각화
-  * 결과 해석
-  
 ```{r}
 fit <- aov(Recall ~ Condition, dat)
 summary(fit)
@@ -160,10 +155,13 @@ plot(tukey)
     
 ```{r}
 library(multcomp)
+#fit <- aov(Recall ~ Condition, dat)
 fit.tukey <- glht(fit, linfct = mcp(Condition = 'Tukey'))
 summary(fit.tukey)
 confint(fit.tukey)
 plot(confint(fit.tukey))
+#fit2 <- lm(Recall ~ Condition, dat)
+#plot(confint(glht(fit2, linfct = mcp(Condition = 'Tukey'))))
 ```
     
     
