@@ -1,5 +1,5 @@
 ---
-title: "검정력"
+title: "ANOVA"
 output: html_document
 ---
 
@@ -7,17 +7,25 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+#install.packages('effsize')
+#install.packages('multcomp')
+
+```
+
+
 ## 효과 크기
   - [효과크기 신뢰구간](https://www.uvm.edu/~statdhtx/methods8/Supplements/Confidence%20Intervals%20on%20Effect%20Size.pdf)
   
 ```{r}
-#install.packages('effsize')
-#install.packages('effectsize')
-
 y1 = rnorm(10, 165, 10)
 y2 = rnorm(10, 175, 10)
 dat = data.frame(height = c(y1, y2), 
                  gender = c(rep('F', 10), rep('M', 10)))
+dat
+table(dat$gender)
+dat <- dat %>% mutate(gender = factor(gender))
+skimr::skim(dat)
 
 library(effsize)
 
@@ -39,11 +47,12 @@ cohen.d(dat$height, dat$gender, pooled=TRUE)
 ```{r}
 library(pwr) # install.packages('pwr')
 pwr.t.test(n=25, d=0.75, sig.level=.05, alternative="two.sided")
-pwr.t.test(d=0.75, sig.level=.05, alternative="two.sided", power = 0.8)
+pwr.t.test(d = 0.75, sig.level=.05, alternative="two.sided", power = 0.8)
+pwr.t.test(d = 0.3, sig.level=.05, alternative="two.sided", power = 0.8)
+pwr.t.test(d = 1.5, sig.level=.05, alternative="two.sided", power = 0.8)
 # alternative = c('two.sided', 'less', 'greater')
 # type = c('two.sample', 'one.sample', 'paired')
 ```
-
 
 * [검증력 계산 소프트웨어: GPower](https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower.html)
 
@@ -86,7 +95,7 @@ dat %>%
 ```
 
 * 다중 비교(Multiple Comparison)의 문제점 
-  * 다중성(multiplicity) 문제
+  * 다중성(multiplicity) 문제 : 검정의 갯수가 늘어남에 따라 계통적 오류율 증가
   
 ```{r}
 t.test(dat %>% filter(Condition == 1) %>% pull(Recall),
@@ -103,18 +112,13 @@ with(dat, pairwise.t.test(Recall, Condition, p.adj = "none", pool.sd = FALSE))
 ```  
   
 * 여러 모평균에 대한 영가설 검정 방법
-  * F-분포
-  * 자유도 
-    * 각 집단의 자유도
+  * [F-분포](https://en.wikipedia.org/wiki/F-distribution)
+  * F-검정의 두 자유도 $d_1$ , $d_2$
+    * $d_1$ : 집단 평균 분산 추정에서 자유도
+    * $d_2$ : 집단 내 공통 분산 추정에서 자유도
     
-    
-* R로 하는 일요인 분산분석
-  * 가정
-  * 시각화
-  * 결과 해석
-  
 ```{r}
-fit <- aov(Recall ~ Condition, dat)
+fit <- aov(Recall ~ Condition, data = dat) # Analysis Of Variance
 summary(fit)
 plot(fit)
 ```
@@ -128,8 +132,8 @@ plot(fit)
     * 피셔의 통제된 최소유의차이법(Protected Least Significant Difference; Protected LSD) : ANOVA에서 유의미하다면 동일한 유의수준으로 pairwise t-검정. ANOVA에서 유의미하지 않다면 t-검정을 실시하지 않는다. 약한 계통적 오류율은 통제되지만, **강한 계통적 오류율**은 통제하지 못한다.
     * 본페르니(Bonferroni) 방법 : 실제 오류율의 최대값이 유의 수준이 된다. 실제 오류율은 유의 수준보다 작으므로 **보수적**인 방법
     * 시닥(Sidak)의 방법 : 검정이 모두 독립일 때, 실제 오류율과 유의 수준이 같다.
-    * 홈(Holm)의 방법: 
-    * 튜키(Tukey)의 방법 : 
+    * 홈(Holm)의 방법: Sequential한 방법. 강한 계통적 오류율을 통제하므로, Bonferroni 방법보다 검정력이 높다.
+    * 튜키(Tukey)의 방법 : 모집단이 정규분포를 만족하는 경우 쌍별 비교에 사용할 수 있다. 
       * 스튜던트화 범위 분포 
   * 오류율 사이의 관계
     * 약한 계통적 오류율 <= 거짓 발견율의 기댓값 <= 강한 계통적 오류율
@@ -155,10 +159,14 @@ plot(tukey)
 ```
     
 ```{r}
+library(multcomp)
+#fit <- aov(Recall ~ Condition, dat)
 fit.tukey <- glht(fit, linfct = mcp(Condition = 'Tukey'))
 summary(fit.tukey)
 confint(fit.tukey)
 plot(confint(fit.tukey))
+#fit2 <- lm(Recall ~ Condition, dat)
+#plot(confint(glht(fit2, linfct = mcp(Condition = 'Tukey'))))
 ```
     
     
@@ -167,14 +175,20 @@ plot(confint(fit.tukey))
 * 예
 
 $$\mu_1 + \mu_2 + \mu_3 = \mu_4 + \mu_5$$
+$$\mu_1 + \mu_3 = \mu_5$$
 
-$$\frac{\mu_1 + \mu_2 + \mu_3}{3} = \frac{\mu_4 + \mu_5}{2}$$
+
 
 ```{r}
 confint(glht(fit, 
              linfct = mcp(Condition = c("`1` + `2` + `3` - `4` - `5` = 0",
                                         "`1` + `3` - `5` = 0"))))
-          
+```
+
+$$\frac{\mu_1 + \mu_2}{2} = \frac{\mu_3 + \mu_4 + \mu_5}{3}$$
+$$\frac{\mu_1 + \mu_3 + \mu_5}{3} = \frac{\mu_2 + \mu_4}{2}$$
+
+```{r}
 contr <- rbind("2 by 3" = c(-1/2, -1/2, 1/3, 1/3, 1/3),
                "odd by even" = c(-1/3, 1/2, -1/3, 1/2, -1/3))                                 
                
@@ -191,6 +205,7 @@ confint(glht(fit, linfct = mcp(Condition = contr)))
 ### 데이터 시각화
 
 ```{r}
+
 dat %>%
   ggplot(aes(Condition, Recall, col=Age, group=Age)) +
   geom_jitter(alpha=0.6, width=0.1) + 
@@ -244,9 +259,11 @@ dat %>%
 * 이요인 분산 분석의 영가설
   * 이요인 분산 분석의 모형
   
-$$\mu_{ijk} = \alpha_{i} + \beta_{j} + e_{ijk}\ \ \ \ \  \textrm{주효과 모형}$$  
-  
-$$\mu_{ijk} = \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} + e_{ijk}\ \ \ \ \  \textrm{상호작용 모형}$$
+$$\mu_{ij} = \mu + \alpha_{i} + \beta_{j}\ \ \ \ \  \textrm{주효과 모형}$$  
+$$y_{ijk} = \mu + \alpha_{i} + \beta_{j} + e_{ijk}\ \ \ \ \  \textrm{주효과 모형}$$
+
+$$\mu_{ij} = \mu + \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} \ \ \ \ \  \textrm{상호작용 모형}$$
+$$y_{ijk} = \mu + \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} + e_{ijk}\ \ \ \ \  \textrm{상호작용 모형}$$
 
   * 주효과, 상호작용 효과에 대한 영가설
 
@@ -265,10 +282,26 @@ fit_interaction <- aov(Recall ~ Condition + Age + Condition:Age, data = dat)
 summary(fit_interaction)
 ```
 
+## 상호작용 효과 그림(interaction plot)
+
+```{r}
+dat %>% group_by(Age, Condition) %>%
+  summarise_all(mean) %>%
+  ggplot(aes(x =Condition, y= Recall, col=Age, group=Age)) +
+  #geom_beeswarm(col='grey60', alpha=0.7) + 
+  #stat_summary(geom="point", fun.data = mean_cl_normal) +
+  geom_point() + 
+  geom_line() +
+  ylab("Recall") +
+  xlab("")
+```
+
+
 ----
 
 ### 참고 자료
 * [Effect size and power](http://daniellakens.blogspot.com/2020/03/effect-sizes-and-power-for-interactions.html)
+* [Confidence Intervals on Effect Size](https://www.uvm.edu/~statdhtx/methods8/Supplements/Confidence%20Intervals%20on%20Effect%20Size.pdf)
 * [What's family in familywise error?](http://daniellakens.blogspot.com/2020/03/whats-family-in-family-wise-error.html)
 * https://stat.ethz.ch/~meier/teaching/anova/contrasts-and-multiple-testing.html
 * [OSF](https://osf.io/rmn8p/download)
