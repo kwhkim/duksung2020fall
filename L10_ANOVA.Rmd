@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 #install.packages('effsize')
 #install.packages('multcomp')
+library(dplyr)
 
 ```
 
@@ -26,6 +27,7 @@ dat
 table(dat$gender)
 dat <- dat %>% mutate(gender = factor(gender))
 skimr::skim(dat)
+
 
 library(effsize)
 
@@ -67,7 +69,6 @@ pwr.t.test(d = 1.5, sig.level=.05, alternative="two.sided", power = 0.8)
 ### Data 
 
 ```{r}
-library(dplyr)
 library(ggplot2)
 
 dat <- read.table('https://www.uvm.edu/~statdhtx/methods8/DataFiles/Tab13-2.dat', 
@@ -85,7 +86,7 @@ dat %>%
   ylab("Recall (95% CI)") +
   xlab("")
 
-library(ggbeeswarm)
+
 dat %>%
   ggplot(aes(Condition, Recall)) +
   geom_jitter(col='grey60', alpha=0.7, width=0.1) + 
