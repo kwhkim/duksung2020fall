@@ -43,15 +43,10 @@ library(dplyr)
   - $u_i + e_{ij}$  # i-번째 sample, j-번째 관측
   - 관찰값의 상관을 고려하지 않으면, 추론에 문제가 발생한다!
 
-* 비선형 또는 상호 작용
-  - 비선형성 : 일변수에서 변수의 수준에 따라 효과가 다르게 나타난다.
-  - 상호 작용 : 이변수에서 다른 변수의 수준에 따라 효과가 다르게 나타난다.
-
 * 기본적인 가정
   - 정규성
-  - 등분산성
   - 균형(balanced) 표본
-  - 구형성(Sphericity)
+  - [구형성(Sphericity)](https://statistics.laerd.com/statistical-guides/sphericity-statistical-guide.php)
 
 ![구형성 가정](https://blogfiles.pstatic.net/20150602_4/y4769_1433173222474YrBtE_PNG/%BD%BD%B6%F3%C0%CC%B5%E516.PNG)
 
