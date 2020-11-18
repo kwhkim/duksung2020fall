@@ -283,6 +283,17 @@ fit_interaction <- aov(Recall ~ Condition + Age + Condition:Age, data = dat)
 summary(fit_interaction)
 ```
 
+```{r}
+fit1 <- lm(Recall ~ Condition + Age + Condition:Age, data = dat)
+summary(fit1)
+
+fit2 <- lm(Recall ~ Condition + Age, data = dat)
+summary(fit2)
+
+library(car)
+compareCoefs(fit1, fit2)
+```
+
 ## 상호작용 효과 그림(interaction plot)
 
 ```{r}
