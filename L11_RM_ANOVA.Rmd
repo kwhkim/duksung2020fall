@@ -1,0 +1,325 @@
+---
+title: "11강. 반복측정 데이터의 분석"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+#install.packages('effsize')
+#install.packages('multcomp')
+library(dplyr)
+library(ggplot2)
+library(ggbeeswarm)
+library(gghighlight)
+```
+
+
+## 지난 시간 정리
+
+* 다중성 문제
+  - multiple t-test의 문제 : 모든 영가설이 참일 때, 하나 이상의 영가설을 기각하는 약한 1종 오류율의 증가
+  - 대안 
+    - Fisher의 최소유의차이방법(LSD; **L**east **S**ignificant **D**ifference) : ANOVA 후 동일한 유의수준으로 t-test. 약한 계통적 오류율을 통제하지만 **강한 계통적 오류율**은 통제하지 못한다.
+    - 본페로니의 방법 : 유의 수준이 $\alpha$ , 검정의 갯수가 $c$ 일 때, $i$ 번째 t-test의 p-value $p_i$ 를 $p_i/c$ 로 조정하여, 유의수준 $\alpha$ 와 비교한다. 약한 계통적 오류율과 강한 계통적 오류율을 모두 통제한다. 굳이 ANOVA를 먼저 실시할 필요는 없다. 검정력이 낮다.
+    - 홈(Holm)의 방법 : 본페로니 방법과 같이 약한 계통적 오류율과 강한 계통적 오류율을 모두 유의 수준 $\alpha$ 로 통제한다. 본페로니 방법에 비해 검정력이 높다. p-value를 정렬하여 $\alpha/c,\  \alpha/(c-1),\ \cdots, \ \alpha$ 와 비교한다. 만약 이전 비교가 유의미하지 않다면 다음 검정을 실시하지 않는다.
+    - 참고 : 영가설의 갯수가 늘어남에 따라 약한/강한 계통적 오류율을 통제하는 방법은 검정력이 매우 낮아진다. 거짓발견율(FDR; **F**alse **D**iscovery **R**ate)은 많은 영가설을 검정해야할 경우에 검정력을 높여준다.
+
+* 이요인 분산 분석
+  * 모형 : $\mu_{ij} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij}$
+  * 상호작요에 대한 유의성 검정 : 위의 모형에서 "상호작용 효과가 모두 0이다"라는 영가설에 대한 검정. 만약 상호작용효과가 모두 0이라면 위의 모형은 다음과 같이 간단하게 표기 가능하다. $\mu_{ij} = \mu + \alpha_i + \beta_j$
+  * 주효과는 요인을 어떻게 설정하느냐에 따라 달라짐을 유의하자.
+  
+## 분산분석과 회귀분석
+
+* 예시 데이터
+
+```{r}
+dat <- read.table('https://www.uvm.edu/~statdhtx/methods8/DataFiles/Tab13-2.dat', 
+           header=TRUE)
+dat = dat %>% mutate(Age = ifelse(Age == 1, "Young", "Old"),
+                     Condition = factor(Condition))
+
+table(dat$Condition)
+
+library(ggbeeswarm)
+dat %>%
+  ggplot(aes(Condition, Recall, col=Age)) +
+  geom_beeswarm(alpha=0.7) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
+  ylab("Recall (95% CI)") +
+  xlab("")
+
+dat$label_key =''
+dat %>%
+  ggplot(aes(Condition, Recall, col=Age)) +
+  #geom_beeswarm(color ='grey70', alpha=0.7) + 
+  #facet_grid(Age ~.) + 
+  #gghighlight(label_key = label_key) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal, position = position_dodge(width=0.2)) +
+  ylab("Recall (95% CI)") +
+  xlab("")
+```
+
+* 설명 변수 `Age`
+
+```{r}
+summary(aov(Recall ~ Age, data=dat))
+```
+
+```{r}
+summary(lm(Recall ~ Age, data=dat))
+```
+
+* 설명변수 `Condition`
+
+```{r}
+summary(aov(Recall ~ Condition, data=dat))
+```
+
+```{r}
+summary(lm(Recall ~ Condition, data=dat))
+```
+
+## 회귀 분석에서 범주변수를 다루는 방법
+
+* Dummy Coding
+
+$$ y = \beta_0x_0 + \beta_1x_1 + \beta_2 x_2 + \beta_3 x_3 +\beta_4x_4 + \beta_5x_5 $$
+
+
+|   | $x_0$  |  $x_1$ | $x_2$  |  $x_3$ | $x_4$  |
+|---|---|---|---|---|---|
+| Condition1  | 1  |0   | 0  |0   | 0  |
+| Condition2  | 1  | 1   |  0 | 0  |  0 |
+| Condition3  | 1  |0   | 1  |  0 | 0  |
+| Condition4  | 1  |0   | 0  |  1 | 0  |
+| Condition5  | 1  |0   | 0  |  0 | 1  |
+
+$$ \textrm{Condition1} = \beta_0  $$
+$$ \textrm{Condition2} = \beta_0 + \beta_1  $$
+$$ \textrm{Condition3} = \beta_0 + \beta_2  $$
+$$ \textrm{Condition4} = \beta_0 + \beta_3 $$
+$$ \textrm{Condition5} = \beta_0+ \beta_4  $$
+
+위의 연립 방정식을 $\beta_\cdot$ 에 대해 풀어보면, 다음과 같다.
+
+$$\beta_0 = \textrm{Condition1}$$
+$$\beta_1 = \textrm{Condition2} - \textrm{Condition1}$$
+$$\beta_2 = \textrm{Condition3} - \textrm{Condition1}$$
+$$\beta_3 = \textrm{Condition4} - \textrm{Condition1}$$
+$$\beta_4 = \textrm{Condition5} - \textrm{Condition1}$$
+
+* 참고 : [연립 방정식 풀기](https://www.wolframalpha.com/input/?i=Solve%5B%7By1+%3D+b0%2C+y2+%3D+b0+%2B+b1%2C+y3+%3D+b0+%2B+b2%2C+y4+%3D+b0+%2B+b3%2C+y5%3Db0%2Bb4%7D%2C+%7Bb0%2C+b1%2C+b2%2C+b3%2C+b4%7D%5D)
+
+```{r}
+summary(lm(Recall ~ Condition , data=dat))
+```
+
+
+|   | $x_0$  |  $x_1$ | $x_2$  |  $x_3$ | $x_4$  |
+|---|---|---|---|---|---|
+| Condition1  | 1  |0   | 0  |0   | 0  |
+| Condition2  | 0  | 1   |  0 | 0  |  0 |
+| Condition3  | 0  |0   | 1  |  0 | 0  |
+| Condition4  | 0  |0   | 0  |  1 | 0  |
+| Condition5  | 0  |0   | 0  |  0 | 1  |
+
+```{r}
+summary(lm(Recall ~ Condition - 1, data=dat))
+```
+
+|   | $x_0$  |  $x_1$ | $x_2$  |  $x_3$ | $x_4$  |
+|---|---|---|---|---|---|
+| Condition1  | -1  |1   | 0  |0   | 0  |
+| Condition2  | -1  | 0   |  1 | 0  |  0 |
+| Condition3  | -1  |0   | 0  |  1 | 0  |
+| Condition4  | -1 |0   | 0  |  0 | 1  |
+| Condition5  | -1 |-1   | -1  |  -1 | -1  |
+
+
+```{r}
+summary(lm(Recall ~ Condition , data=dat, 
+           contrasts = list(Condition = contr.sum)))
+```
+
+
+
+## 이번 시간
+
+* 반복측정에서 t-test(차이 점수에 대한 t-test)
+* 반복측정 ANOVA
+* 혼합효과 모형 소개
+
+----
+
+# 반복 측정 t-test
+
+## DATA
+
+```{r}
+dat <- read.table("https://www.uvm.edu/~statdhtx/fundamentals9/DataFiles/Tab13-1.dat",
+                  sep="\t", header=T)
+head(dat)
+dat$subj = 1:nrow(dat)
+library(tidyr)
+dat2 <- gather(dat %>% select(subj, Before, After), key= 'key', value = 'value', Before:After)
+
+skimr::skim(dat)
+
+head(dat2)
+skimr::skim(dat2)
+ggplot(dat2, aes(x=key, y=value)) + geom_boxplot(width=0.2)
+ggplot(dat2, aes(x=key, y=value)) + geom_violin(width=0.2)
+ggplot(dat2, aes(x=key, y=value, 
+                 col=factor(subj),
+                 group=factor(subj))) + 
+  geom_point() + 
+  geom_line()
+```
+
+## R
+
+```{r}
+t.test(dat %>% pull(Before), dat %>% pull(After), paired =TRUE)
+t.test(formula = value ~ key, paired =TRUE, data=dat2)
+```
+
+## 반복측정 실험의 장점과 단점
+
+* 장점 
+  - 참가자에 의한 분산이 줄어든다. $\mu_{ij} =  \alpha_{i} + (u_j + e_{ij})$
+  - 동일한 검정력을 위해 상대적으로 작은 표본 크기를 요구한다.
+
+* 단점 
+  - 순서효과(order effect)
+  - 이월효과(carry-over effect)
+ 
+---- 
+  
+# 반복 측정 ANOVA
+
+## DATA
+
+```{r}
+dat <- read.table("https://www.uvm.edu/~statdhtx/fundamentals9/DataFiles/Tab18-1.dat",
+                  sep="\t", header=T)
+head(dat)
+
+skimr::skim(dat)
+
+library(tidyr)
+dat <- dat %>% mutate(subj = factor(1:nrow(dat)))
+dat2 <- dat %>% gather(key='key', value='value', Week0:Week12)
+```
+
+## 시각화
+
+```{r}
+dat2 %>%
+  ggplot(aes(key, value)) +
+  geom_beeswarm(col='grey60', alpha=0.7) + 
+  stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
+  ylab("depression score") +
+  xlab("")
+
+dat2 %>%
+  ggplot(aes(x=key, y=value, col=subj, group=subj)) +
+  geom_beeswarm(alpha=0.7) + 
+  geom_line()+
+  #stat_summary(geom="pointrange", fun.data = mean_cl_normal) +
+  ylab("Recall (95% CI)") +
+  xlab("")
+```
+
+```{r}
+dat <- read.table("https://www.uvm.edu/~statdhtx/fundamentals9/DataFiles/Tab18-1.dat",
+                  sep="\t", header=T)
+
+dat$subj = 1:nrow(dat)
+dat2 <- dat %>% gather(key='key', value='value', Week0:Week12) 
+
+library(stringr)
+dat2 %>% 
+  mutate(key = str_replace(key,'Week', '')) %>%
+  mutate(key = as.numeric(key)) %>% 
+  ggplot(aes(x=key, y=value, col=factor(subj),
+             group=factor(subj)))+ 
+  geom_point(alpha=0.5) +
+  geom_line() + 
+  facet_wrap(~subj) + 
+  gghighlight(label_key=emptylabel) + 
+  scale_x_continuous(breaks=c(0,3,6,9,12)) +
+  labs(title = 'Subject trajectories', 
+       subtitle = '지진 전후의 우울 점수(놀란-훽시마 등, 1991)',
+       x='Week',
+       y='depression') + 
+  theme(legend.position = 'none')
+```
+ 
+
+## 반복 측정 ANOVA : 이론
+
+* 독립성 가정의 위배
+  - 오차항의 독립성?
+  - $y_{ij} = \mu + \alpha_i + u_j + e_{ij}$  (i-번째 조건(시간), j-번째 사람)
+  - 관찰값의 상관을 고려하지 않으면, 추론에 문제가 발생한다!
+
+* 기본적인 가정
+  - 정규성
+  - 등분산성
+  - 균형(balanced) 표본
+  - 구형성(Sphericity)
+
+![구형성 가정](https://blogfiles.pstatic.net/20150602_4/y4769_1433173222474YrBtE_PNG/%BD%BD%B6%F3%C0%CC%B5%E516.PNG)
+
+## R
+
+```{r}
+dat2 <- dat2 %>% mutate(subj = factor(subj))
+print(summary(aov(value ~ key + Error(subj/key), data=dat2)))
+```
+
+print(model.tables(fit1,"means"),digits=3)       
+boxplot(value ~ key ,data = dat2)          
+
+```{r}
+#library(car)
+library(afex)
+fit <- aov_car(value ~ key + Error(subj/key), data =dat2)
+summary(fit)
+```
+
+```{r}
+library(emmeans)
+lsmeans(fit, 'key')
+#print(model.tables(fit1,"means"),digits=3)  
+```
+
+```{r}
+t.test(dat2 %>% filter(key=="Week0") %>% pull(value))
+t.test(dat2 %>% filter(key=="Week3") %>% pull(value))
+```
+
+
+----
+
+# 혼합효과 모형(mixed-effects models)
+
+## 혼합효과 모형의 장점
+
+* 반복 측정 분산 분석은 균형(balanced) 표본을 필요로 하지만, 혼합 효과 모형은 그렇지 않다.
+* 구형성의 가정이 필요 없다.
+
+## R 구현
+
+```{r}
+library(lme4)
+library(lmerTest)
+fit <- lmer(value ~ key + (1|subj), data= dat2)
+summary(fit)
+confint(fit)
+```
+

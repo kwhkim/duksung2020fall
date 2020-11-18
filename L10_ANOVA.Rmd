@@ -301,6 +301,7 @@ dat %>% group_by(Age, Condition) %>%
 
 ### 참고 자료
 * [Effect size and power](http://daniellakens.blogspot.com/2020/03/effect-sizes-and-power-for-interactions.html)
+* [Confidence Intervals on Effect Size](https://www.uvm.edu/~statdhtx/methods8/Supplements/Confidence%20Intervals%20on%20Effect%20Size.pdf)
 * [What's family in familywise error?](http://daniellakens.blogspot.com/2020/03/whats-family-in-family-wise-error.html)
 * https://stat.ethz.ch/~meier/teaching/anova/contrasts-and-multiple-testing.html
 * [OSF](https://osf.io/rmn8p/download)
