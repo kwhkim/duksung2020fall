@@ -1,0 +1,41 @@
+---
+title: "Matrix notation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 선형 회귀
+
+### 독립, 등분산 가정일 때
+
+$$\vec{y} = X \vec{\beta} + \vec{e}$$ 
+
+$\vec{e}$ 의 크기를 최소화하는 $\vec{\beta}$ 를 구하고자 한다.
+
+$\vec{e}$ 의 크기는 $\vec{e}^\intercal\vec{e}$ 로 나타내고, 이를 최소화하기 위해서는 그래디언트가 $\vec{0}$ 이 되어야 한다.
+
+$$\vec{e}^\intercal\vec{e} = (X \vec{\beta} + \vec{e})^\intercal (X \vec{\beta} + \vec{e})$$
+
+$$\nabla_{\hat{\vec{\beta}}}(\vec{e}^\intercal\vec{e}) = \nabla_{\vec{\beta}}(X \vec{\beta} + \vec{e})^\intercal (X \vec{\beta} + \vec{e}) = \nabla_{\vec{\beta}} ((X \vec{\beta})^\intercal X \vec{\beta} + (X \vec{\beta})^\intercal\vec{e} + \vec{e}^\intercal X \vec{\beta} +\vec{e}^\intercal \vec{e})$$
+
+$$\nabla_{\vec{\beta}} ((X \vec{\beta})^\intercal X \vec{\beta} + (X \vec{\beta})^\intercal\vec{e} + \vec{e}^\intercal X \vec{\beta} +\vec{e}^\intercal \vec{e}) = -2X^\intercal(\vec{y}-X\vec{\beta})$$
+
+$$  -2X^\intercal(Y-X\vec{\beta}) = 0$$
+
+$$X^\intercal \vec{y} = X^\intercal X \vec{\beta}$$
+
+$$ \vec{\beta} = (X^\intercal X)^{-1} X^\intercal \vec{y}$$
+
+* [참고 자료](https://www.stat.purdue.edu/~boli/stat512/lectures/topic3.pdf)
+
+### 오차 분산-공분산 행렬이 대각행렬이 아닐 경우
+
+앞에서 $\vec{e}^\intercal \vec{e}$ 를 최소화는 것이,
+$\vec{e}^\intercal V^{-1} \vec{e}$ 의 최소화로 바뀌게 된다.
+
+그에 따라 $\beta$ 추정치도 다음과 같이 바뀐다.
+
+$$ \vec{\beta} = (X^\intercal V^{-1} X)^{-1} X V^{-1} \vec{y}$$
