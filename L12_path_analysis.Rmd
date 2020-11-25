@@ -95,7 +95,7 @@ indirect1:= r.p*p.c
 total:=r.c + indirect1
 "
 fit1 <- sem(model, data=dat)
-fit2 <- sem(model, data=dat, se='bootstrap', bootstrap=10000)
+fit2 <- sem(model, data=dat, se='bootstrap', bootstrap=100)
 fit3 <- sem(model, data=dat, mimic='Mplus')
 
 summary(fit1)
@@ -119,7 +119,7 @@ pmi ~ p.c*cond
 indirect1:= r.p*p.c 
 indirect2:= r.i*i.c"
 fit1 <- sem(model, data=dat)
-fit2 <- sem(model, data=dat, se='bootstrap')
+fit2 <- sem(model, data=dat, se='bootstrap', bootstrap=100)
 fit3 <- sem(model, data=dat, mimic='Mplus')
 # estimator = 'ML'  : Maximum Likelihood
 #             'GLS' : Generalized least squares
@@ -160,7 +160,7 @@ summary(fit, fit.measures=TRUE)
 ### Effect size
 
 ```{r}
-fit2 <- sem(model, data=dat, se='bootstrap', bootstrap=10000, std.ov = TRUE,
+fit2 <- sem(model, data=dat, se='bootstrap', bootstrap=100, std.ov = TRUE,
             control=list(iter.max=1000))
 parameterEstimates(fit2)
 ```
@@ -183,7 +183,7 @@ dum <- dummy.code(dat$Condition) %>% data.frame
 dat <- cbind(dat, dum)
 model <- "
 Recall ~ X2 + X3 + X4 + X5"
-fit <- sem(model, dat, se='bootstrap')
+fit <- sem(model, dat, se='bootstrap', bootstrap=100)
 parameterEstimates(fit)
 ```
 
