@@ -1,0 +1,189 @@
+---
+title: "12강. 선형 모형: 심화"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+#install.packages('effsize')
+#install.packages('multcomp')
+library(dplyr)
+library(ggplot2)
+library(ggbeeswarm)
+library(gghighlight)
+```
+
+
+## 지난 시간 정리
+
+* 반복 측정 ANOVA
+
+---
+
+## 분산분석과 회귀분석
+
+### 회귀 분석의 계수 이해
+
+* 범주형 변수 코딩 방법
+  * Dummy Coding
+  * Effect Coding
+  
+### 조절 효과 모형  
+
+* 핵심 질문 
+  * 조절 효과가 존재하는가?
+  * 계수가 다른 변수의 수준에 따라 달라지는가?
+
+
+### 선형 매개 효과 모형
+
+* 핵심 질문 : **매개 효과 검정** 또는 **추정**
+
+
+### 경로 분석(path analysis)
+
+* 모형 예
+
+* 직접 효과, 간접효과, 총효과
+
+* 
+
+###
+
+$$y = \beta_{y0} + \beta_{yx} x + \beta_{ym} m + e_y$$
+$$m = \beta_{m0} + \beta_{mx} x  + e_m$$
+
+공분산을 구해보면,
+
+$$\mathbb{C}[M,X] = \mathbb{C}[\beta_{mx}X, X] = \beta_{mx} \mathbb{V}[X]$$
+$$\mathbb{C}[Y,X] = \mathbb{C}[\beta_{yx}X + \beta_{ym}M, X] = \beta_{yx}\mathbb{V}[X] + \beta_{ym}\mathbb{C}[M,X]=(\beta_{yx}  + \beta_{mx})\mathbb{V}[X]$$
+
+이런 식으로 $X, M, Y$ 사이의 공분산과 분산을 $\mathbb{V}[X]$ 와 계수 $\beta_{mx}, \beta_{yx}, \beta_{ym}$ 등으로 표현할 수 있다.
+
+
+## a*b의 분포 : a, b가 정규분포일 때
+
+```{r}
+a <- rnorm(10000, 2, 1)
+b <- rnorm(10000, 1, 2)
+ind <- a*b
+hist(ind, breaks=seq(min(ind)-1, max(ind)+1, lengh.out= max(ind)-min(ind)+3), freq=FALSE)
+abline(v=quantile(ind, probs = c(0.025, 0.975)), lty='solid')
+curve(dnorm(x, mean=mean(ind), sd=sd(ind)), add=TRUE, lty='dotted')
+abline(v=qnorm(mean=mean(ind), sd=sd(ind), p= c(0.025, 0.975)), lty='dotted')
+```
+
+
+
+```{r}
+library(psych) # install.packages('psych')
+data("Tal.Or")
+dat <- Tal.Or
+head(dat)
+dat <- dat %>% mutate(cond = factor(cond))
+```
+
+```{r}
+library(lavaan) # install.packages('lavaan')
+model = "
+reaction ~ r.c*cond + r.p*pmi 
+pmi ~ p.c*cond
+indirect1:= r.p*p.c 
+total:=r.c + indirect1
+"
+fit1 <- sem(model, data=dat)
+fit2 <- sem(model, data=dat, se='bootstrap', bootstrap=10000)
+fit3 <- sem(model, data=dat, mimic='Mplus')
+
+summary(fit1)
+
+fitmeasures(fit1)
+
+parameterEstimates(fit1)
+parameterEstimates(fit2, boot.ci.type='perc') # ~= Percentile bootstrap
+parameterEstimates(fit2, boot.ci.type='norm') # ~= Normal theory
+parameterEstimates(fit2, boot.ci.type='basic')
+parameterEstimates(fit2, boot.ci.type='bca.simple') # ~= Bias-corrected bootstrap
+parameterEstimates(fit3)
+```
+
+```{r}
+library(lavaan) # install.packages('lavaan')
+model = "
+reaction ~ r.c*cond + r.p*pmi + r.i*import
+import ~ i.c*cond
+pmi ~ p.c*cond
+indirect1:= r.p*p.c 
+indirect2:= r.i*i.c"
+fit1 <- sem(model, data=dat)
+fit2 <- sem(model, data=dat, se='bootstrap')
+fit3 <- sem(model, data=dat, mimic='Mplus')
+# estimator = 'ML'  : Maximum Likelihood
+#             'GLS' : Generalized least squares
+#             'ULS'
+#             'DWLS'
+
+# se        = 'standard'
+#             'boostrap'
+summary(fit)
+
+parameterEstimates(fit)
+
+
+param1 <- parameterEstimates(fit1)
+param2 <- parameterEstimates(fit2)
+param3 <- parameterEstimates(fit3)
+
+paramDiff = param2 %>% select(est, se, z, pvalue, ci.lower, ci.upper) - 
+  param1 %>% select(est, se, z, pvalue, ci.lower, ci.upper)
+
+cbind(param1 %>% select(-(est:ci.upper)), paramDiff)
+
+semPlot::semPaths(fit, whatLabels = 'std')
+
+diagram <- semPlot::semPaths(fit, rotation=2, 
+                             whatLabels = 'std',
+                             curveAdjacent = TRUE, curvePivot=TRUE, curvePivotShape=1, layout='tree2',
+                             style = 'lisrel', 
+                             edge.label.cex=1.4) # install.packages('semPlot')
+```
+
+```{r}
+fit <- lavaan(model=model, data=dat,
+              auto.var = TRUE, auto.fix.first=TRUE)
+summary(fit, fit.measures=TRUE)
+```
+
+### Effect size
+
+```{r}
+fit2 <- sem(model, data=dat, se='bootstrap', bootstrap=10000, std.ov = TRUE,
+            control=list(iter.max=1000))
+parameterEstimates(fit2)
+```
+
+
+
+### 몇 가지 주의할 점
+
+* 매개변수의 인과성
+
+
+```{r}
+dat <- read.table('https://www.uvm.edu/~statdhtx/methods8/DataFiles/Tab13-2.dat', 
+           header=TRUE)
+dat = dat %>% mutate(Age = ifelse(Age == 1, "Young", "Old"),
+                     Condition = factor(Condition))
+lm(Recall ~ Condition, dat)
+
+dum <- dummy.code(dat$Condition) %>% data.frame
+dat <- cbind(dat, dum)
+model <- "
+Recall ~ X2 + X3 + X4 + X5"
+fit <- sem(model, dat, se='bootstrap')
+parameterEstimates(fit)
+```
+

@@ -112,7 +112,6 @@ $$\beta_2 = \textrm{Condition3} - \textrm{Condition1}$$
 $$\beta_3 = \textrm{Condition4} - \textrm{Condition1}$$
 $$\beta_4 = \textrm{Condition5} - \textrm{Condition1}$$
 
-* 참고 : [연립 방정식 풀기](https://www.wolframalpha.com/input/?i=Solve%5B%7By1+%3D+b0%2C+y2+%3D+b0+%2B+b1%2C+y3+%3D+b0+%2B+b2%2C+y4+%3D+b0+%2B+b3%2C+y5%3Db0%2Bb4%7D%2C+%7Bb0%2C+b1%2C+b2%2C+b3%2C+b4%7D%5D)
 
 ```{r}
 summary(lm(Recall ~ Condition , data=dat))
@@ -269,9 +268,13 @@ dat2 %>%
 
 * 기본적인 가정
   - 정규성
-  - 등분산성
+  - 복합대칭성(Compound Symmetry) -> 구형성(Sphericity)
   - 균형(balanced) 표본
-  - 구형성(Sphericity)
+  
+* 용어
+  - 복합대칭성 : 분산이 같고, 공분산이 같다.
+  - 구형성 : 차이 값의 분산이 같다.
+  
 
 ![구형성 가정](https://blogfiles.pstatic.net/20150602_4/y4769_1433173222474YrBtE_PNG/%BD%BD%B6%F3%C0%CC%B5%E516.PNG)
 
@@ -279,11 +282,9 @@ dat2 %>%
 
 ```{r}
 dat2 <- dat2 %>% mutate(subj = factor(subj))
-print(summary(aov(value ~ key + Error(subj/key), data=dat2)))
+fit <- summary(aov(value ~ key + Error(subj/key), data=dat2))
+print(fit)
 ```
-
-print(model.tables(fit1,"means"),digits=3)       
-boxplot(value ~ key ,data = dat2)          
 
 ```{r}
 #library(car)
@@ -303,15 +304,15 @@ t.test(dat2 %>% filter(key=="Week0") %>% pull(value))
 t.test(dat2 %>% filter(key=="Week3") %>% pull(value))
 ```
 
-
 ----
 
 # 혼합효과 모형(mixed-effects models)
 
 ## 혼합효과 모형의 장점
 
-* 반복 측정 분산 분석은 균형(balanced) 표본을 필요로 하지만, 혼합 효과 모형은 그렇지 않다.
 * 구형성의 가정이 필요 없다.
+* 반복 측정 분산 분석은 균형(balanced) 표본을 필요로 하지만, 혼합 효과 모형은 그렇지 않다.
+* 결측치가 있어도 (MCAR 또는 MAR인 경우) 정확한 분석이 가능하다. 
 
 ## R 구현
 
