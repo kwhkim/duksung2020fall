@@ -128,9 +128,9 @@ fit3 <- sem(model, data=dat, mimic='Mplus')
 
 # se        = 'standard'
 #             'boostrap'
-summary(fit)
+summary(fit1)
 
-parameterEstimates(fit)
+parameterEstimates(fit1)
 
 
 param1 <- parameterEstimates(fit1)
@@ -142,9 +142,9 @@ paramDiff = param2 %>% select(est, se, z, pvalue, ci.lower, ci.upper) -
 
 cbind(param1 %>% select(-(est:ci.upper)), paramDiff)
 
-semPlot::semPaths(fit, whatLabels = 'std')
+semPlot::semPaths(fit1, whatLabels = 'std')
 
-diagram <- semPlot::semPaths(fit, rotation=2, 
+diagram <- semPlot::semPaths(fit1, rotation=2, 
                              whatLabels = 'std',
                              curveAdjacent = TRUE, curvePivot=TRUE, curvePivotShape=1, layout='tree2',
                              style = 'lisrel', 
