@@ -282,6 +282,15 @@ fit_interaction <- aov(Recall ~ Condition + Age + Condition:Age, data = dat)
 summary(fit_interaction)
 ```
 
+* 주효과 모형과 상호작용 모형 비교
+
+```{r}
+library(emmeans)
+# means and marginal means based on the model
+emmip(ref_grid(fit_main), Age ~ Condition)  # group ~ x
+emmip(ref_grid(fit_interaction), Age ~ Condition)  # group ~ x
+```
+
 ## 상호작용 효과 그림(interaction plot)
 
 ```{r}
@@ -294,6 +303,35 @@ dat %>% group_by(Age, Condition) %>%
   geom_line() +
   ylab("Recall") +
   xlab("")
+```
+
+### Post-hoc comparison
+
+```{r}
+emmeans(fit_main, pairwise ~ Condition)
+emmeans(fit_main, pairwise ~ Age)
+emmeans(fit_interaction, pairwise ~ Condition)
+emmeans(fit_interaction, pairwise ~ Age)
+emmeans(fit_interaction, pairwise ~ Condition + Age)
+```
+
+* [참고 자료](https://cran.r-project.org/web/packages/emmeans/vignettes/FAQs.html)
+
+---
+
+### `emmeans` 패키지
+
+```{r}
+dat.rg <- ref_grid(fit_interaction)
+plot(dat.rg)
+```
+
+```{r}
+emmip(fit_interaction, ~ Age | Condition, CIs = TRUE) +
+    geom_point(aes(x = Age, y = Recall), data = dat, pch = 2, color = "blue")
+
+emmip(fit_interaction, ~ Condition | Age, CIs = TRUE) +
+    geom_point(aes(x = Condition, y = Recall), data = dat, pch = 2, color = "blue")
 ```
 
 

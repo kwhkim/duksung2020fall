@@ -1,0 +1,125 @@
+---
+title: "Variance-Covariance Matrix"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 분산-공분산 행렬
+
+### 모평균에 대한 검정/추정
+
+모평균을 추정할 때, 표본 추출 때 얻게 되는 데이터는 모두 동일한 분포(따라서 동일한 모평균과 모분산)에 추출된다고 가정한다. 그리고 모든 데이터는 독립이라고 가정한다.
+
+우리가 선형 회귀의 가정을 LINE으로 나타냈다면, 선형성을 나타내는 L을 제외한 글자에 해당한다.
+
+* **I**ndependence
+* **N**ormality
+* **E**qual variance
+
+표본의 크기가 5이고, 추출되는 값들을 모두 확률 변수로 써서 $X_1$ , $X_2$ , $X_3$ , $X_4$ , $X_5$ 로 나타내면, 이들 변수의 분산-공분산 행렬은 다음과 같다.
+
+$$\mathbb{V}[\vec{X}] = \begin{pmatrix} \sigma^2 & 0 & 0 & 0 & 0 \\ 0 & \sigma^2 & 0 & 0 & 0 \\ 0 & 0 & \sigma^2 & 0 & 0 \\ 0 & 0 & 0 & \sigma^2 & 0 \\ 0 & 0 & 0 & 0 & \sigma^2  \end{pmatrix} = \sigma^2 \mathbb{I}$$
+
+참고로 평균은 다음과 같다. 
+$$\mathbb{E}[\vec{X}] = \begin{pmatrix} \mu & \mu & \mu & \mu & \mu & \mu \end{pmatrix}^T$$
+
+### 두 모평균의 차이 검정/추정 : 독립 표본
+
+두 집단에서 표본을 추출하여 두 모평균의 차이를 검정할 때에도 표본의 모든 값을 확률변수로 나타낼 수 있다.
+
+이때 첫 번째 집단의 값을 $X_{11}, X_{12}, \cdots$ 로 나타내고, 두 번째 집단의 값을 $X_{21}, X_{22}, \cdots$ 을 나타낼 수 있다. 다시 말해 $X_{ij}$ 에서 $i$ 는 집단을 나타낸다고 정의하자.
+
+각 집단에서 표본 크기 3의 표본을 추출하자. 그 값을 확률변수로 나타내면 다음과 같다. 
+
+$$X_{11}, X_{12}, X_{13}, X_{21}, X_{22}, X_{23}$$
+
+만약 모든 확률변수가 서로 독립이고, 두 집단의 분산이 동일하다면, 이 확률변수 전체에 대해 분산-공분산 행렬은 다음과 같다. 여기서 $\vec{X} = (X_{11}, X_{12}, X_{13}, X_{21}, X_{22}, X_{23})$ 이다.
+
+$$\mathbb{V}[\vec{X}] = \begin{pmatrix} \sigma^2 & 0 & 0 & 0 & 0 & 0\\ 0 & \sigma^2 & 0 & 0 & 0 & 0 \\ 0 & 0 & \sigma^2 & 0 & 0 & 0 \\ 0 & 0 & 0 & \sigma^2 & 0  & 0\\ 0 & 0 & 0 & 0 & \sigma^2  & 0 \\ 0 & 0 & 0 & 0 & 0 & \sigma^2   \end{pmatrix} = \sigma^2 \mathbb{I}$$
+
+참고로 평균은 다음과 같다. 
+$$\mathbb{E}[\vec{X}] = \begin{pmatrix} \mu_1 & \mu_1 & \mu_1 & \mu_2 & \mu_2 & \mu_2 \end{pmatrix}^T$$
+
+
+### 두 모평균의 차이 검정/추정 : 상관 표본
+
+상관 표본에서는 동일한 참가자가 두 실험 조건에 참가하여 값을 측정하게 된다. 따라서 동일한 참가자의 두 값은 서로 상관을 가지게 된다.
+
+구체적으로 한 참가자의 두 집단에서의 값을 다음과 같이 나타내어 보자.
+
+$y_{1j} = \mu + \alpha_1 + u_j + e_{1j}$
+$y_{2j} = \mu + \alpha_2 + u_j + e_{2j}$
+
+이를 확률변수로 표현하면 다음과 같이 쓸 수 있다. 
+
+$Y_{1j} = \mu + \alpha_1 + U_j + E_{1j}$
+$Y_{2j} = \mu + \alpha_2 + U_j + E_{2j}$
+
+대문자로 쓴 변수는 모두 확률 변수를 나타낸다. 그리고 확률 변수 $U_i$ 와 $E_{i1}, E_{i2}$ 의 평균, 분산을 다음과 같이 쓰자.
+
+$$\mathbb{E}[U_j] = 0, \ \ \mathbb{V}[U_j] = \sigma^2_u$$
+$$\mathbb{E}[E_{ij}] = 0, \ \ \mathbb{V}[E_{ij}] = \sigma^2_e$$
+
+그리고 $Y_{1j}$ 과 $Y_{2j}$ 의 분산과 공분산을 구해보면, 다음과 같다.
+
+$$\mathbb{V}[Y_{1j}, Y_{1j}] = \mathbb{V}[U_j+E_{1j}, U_j + E_{1j}] $$
+$$\ \ \ \ \ \ \ \ \ \  = \mathbb{V}[U_j] + \mathbb{C}[U_j, E_{1j}]+ \mathbb{C}[U_j, E_{1j}] + \mathbb{C}[E_{1j}, E_{1j}]$$
+$$\ \ \ \ \ \ \ \ \ \  = \sigma^2_u + \sigma^2_e$$
+
+$$\mathbb{V}[Y_{j1}, Y_{j2}] = \mathbb{V}[U_j+E_{1j}, U_j + E_{2j}] $$
+$$\ \ \ \ \ \ \ \ \ \  = \mathbb{V}[U_j] + \mathbb{C}[U_j, E_{1j}]+ \mathbb{C}[U_j, E_{2j}] + \mathbb{C}[E_{1j}, E_{2j}]$$
+$$\ \ \ \ \ \ \ \ \ \  = \sigma^2_u$$
+
+따라서 $\vec{X} = (X_{11}, X_{21}, X_{12}, X_{22}, X_{31}, X_{32})$ 라고 했을 때, 분산-공분산 행렬은 다음과 같다.
+
+$$\mathbb{V}[\vec{X}] =
+\begin{pmatrix}
+\sigma^2_u + \sigma^2_e & \sigma^2_u & 0 & 0 & 0 & 0 \\
+\sigma^2_u & \sigma^2_u + \sigma^2_e & 0 & 0 & 0 & 0 \\
+0 & 0 & \sigma^2_u + \sigma^2_e & \sigma^2_u & 0 & 0 \\
+0 & 0 & \sigma^2_u & \sigma^2_u + \sigma^2_e & 0  & 0\\
+0 & 0 & 0 & 0 & \sigma^2_u + \sigma^2_e  & \sigma^2_u \\ 
+0 & 0 & 0 & 0 & \sigma^2_u & \sigma^2_u + \sigma^2_e  \end{pmatrix}  $$
+
+만약 $\rho = \frac{\sigma^2_u}{\sigma^2_u + \sigma^2_e}$ 로 정의하면, 위의 행렬은 다음과 같이 쓸 수 있다. 
+
+$$\mathbb{V}[\vec{X}] = (\sigma^2_u + \sigma^2_e)
+\begin{pmatrix}
+1 & \rho & 0 & 0 & 0 & 0 \\
+\rho & 1& 0 & 0 & 0 & 0 \\
+0 & 0 & 1 & \rho & 0 & 0 \\
+0 & 0 & \rho & 1 & 0  & 0\\
+0 & 0 & 0 & 0 & 1  & \rho \\ 
+0 & 0 & 0 & 0 & \rho & 1  \end{pmatrix}  $$
+
+이때 $(\sigma^2_u + \sigma^2_e)$ 는 모든 확률 변수 $X_{11}, X_{21}, \cdots$ 의 분산이고, 이를 $\sigma^2$ 로 나타내자.  $\rho$ 는 각 확률변수의 분산 대비 참가자에 의한 분산 $\sigma^2_u$ 의 비를 나타내고, 동일한 참가자의 두 관찰변수의 상관 계수이기도 하다. 이를 활용하여 위의 식은 다음과 같이 간단히 정리할 수 있다. ( $\otimes$ : 크로네커 곱 )
+
+$$\mathbb{V}[\vec{X}] = \sigma^2 \begin{pmatrix}
+1 & \rho  \\
+\rho & 1 \end{pmatrix} \otimes \mathbb{I_3}$$
+
+만약 표본의 크기가 $n$ 으로 늘어난다면, 간단하게 다음과 같이 쓸 수 있다. 
+
+$$\mathbb{V}[\vec{X}] = \sigma^2 \begin{pmatrix}
+1 & \rho  \\
+\rho & 1 \end{pmatrix} \otimes \mathbb{I}_n$$
+
+그리고 위의 식은 다음과 같이 분해해 볼 수 있다.
+
+$\sigma^2$ 는 관찰 변수의 분산을 나타내고, 이는 모두 동일하다고 가정했다.
+
+상관 행렬 $\begin{pmatrix}
+1 & \rho  \\
+\rho & 1 \end{pmatrix}$ 는 동일한 참가자 내에서 관찰 변수 간의 상관 관계를 나타낸다.
+
+그리고 $\mathbb{I}_n$ 는 참가자의 명수를 나타낸다.
+
+다시 말해 앞서 봤던 (두 모평균의 차이 검정을 위한) 독립표본에서는 $\sigma^2 \mathbb{I}_2 \otimes \mathbb{I}_n$ 으로 나타났던 관찰 변수의 분산-공분산 행렬은 상관 표본에서는 $\sigma^2 \mathbb{C} \otimes\mathbb{I}_n$ ( $\mathbb{C}$ : 상관 행렬)로 변하게 된다. 
+
+* 참고로 평균은 다음과 같다.
+
+$$\mathbb{E}[\vec{X}] = \begin{pmatrix} \mu_1 & \mu_2 & \mu_1 & \mu_2 & \mu_1 & \mu_2 \end{pmatrix}^T$$
+
