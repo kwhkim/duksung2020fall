@@ -180,7 +180,7 @@ $$y_{ij} = (\beta_0 + u_0) + (\beta_1 + u_1) x_{ij1} + (\beta_2 + u_2) x_{ij2} +
 ## 추정방법
 
 * MLE
-* REML(**RE**sidual **M**aximum **L**ikelihood estimate) : 분산 추정이 좀 더 정확한 것으로 알려져 있다.
+* REML(**RE**stricted **M**aximum **L**ikelihood estimate) : 분산 추정이 좀 더 정확한 것으로 알려져 있다.
 * 베이지언 
 
 MLE은 분산 추정을 위해 SSE(**S**um of **S**quares **E**rror)에 자료수를 나눠주고, REML은 자료수 - 1을 나눈다. 
