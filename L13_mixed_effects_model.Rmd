@@ -193,7 +193,7 @@ MLE은 분산 추정을 위해 SSE(**S**um of **S**quares **E**rror)에 자료�
   - **E**xpectation **M**aximization algorithm
   - **A**verage **I**nformation algorithm
 
-![계산방법비교(Gumedze & Dunne, 2011)](lme_computation.png)
+![계산방법비교(Gumedze & Dunne, 2011)](figure/lme_computation.png)
 
 * 용어
   - 수렴(convergence) : 최적의 해를 찾았다는 의미. 최적의 해를 찾는 방법이 반복적으로 가능한 해를 제시하고, 이를 확인하는 과정이므로, 최적의 해임을 확인하는 방법이 필요하다. 하지만 완벽하게 정확한 값을 찾기는 어렵기 때문에 어느 정도에서 최적의 해임을 확인하면 계산을 마치게 된다.
@@ -270,6 +270,9 @@ library(lme4)
 library(lmerTest)
 fit.lmer <- lmer(value ~ key + (1|subj), datLong)
 summary(fit.lmer)
+fit2.lmer <- lmer(value ~ key + (1|subj), datLong, 
+                  contrasts = list(key=contr.sum))
+summary(fit2.lmer)
 plot(fit.lmer)
 library(ggResidpanel) # install.packages('ggResidpanel')
 # 적합 확인
@@ -307,7 +310,7 @@ intervals(fit.lme)
 ## 가정이 어긋났을 때
 
 * `robustlmm`
-[robustlmm](roboustlmm.png)
+[robustlmm](figure/roboustlmm.png)
 
 
 ## 참고 문헌/참고자료
